@@ -4,6 +4,8 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
 from datetime import datetime
 
+from .reminders import register_reminder_handlers, send_report_prompt
+
 load_dotenv()
 
 BOT_TOKEN = os.getenv("REPORTBOT_SLACK_BOT_TOKEN")
@@ -11,6 +13,7 @@ APP_TOKEN = os.getenv("REPORTBOT_APP_TOKEN")
 CHANNEL_ID = os.getenv("REPORTBOT_CHANNEL_ID")
 
 app = App(token=BOT_TOKEN)
+register_reminder_handlers(app)
 
 # ----- Helpers ---------------------------------------------------------------
 def _get(view, block_id, action_id, default=""):
@@ -130,6 +133,19 @@ def handle_report(ack, body, client):
             ],
         }
     )
+
+
+# ----- Slash command: /report-ask -------------------------------------------
+@app.command("/report-ask")
+def handle_report_ask(ack, body, respond):
+    """Slash command that picks an online user and pings them with a button.
+
+    This reuses the reminder logic in reminders.send_report_prompt.
+    """
+    ack()
+    send_report_prompt(app, CHANNEL_ID)
+    respond("Okay, I'll ask someone in the channel to fill in the duty report.")
+
 
 # ----- Modal submission ------------------------------------------------------
 @app.view("report_modal")
