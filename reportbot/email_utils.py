@@ -11,17 +11,14 @@ EMAIL_FROM = os.getenv("REPORTBOT_EMAIL_FROM")
 EMAIL_TO_DEFAULT = os.getenv("REPORTBOT_EMAIL_TO")
 
 
+# uses basic SMTP configuration from environment variables
+# if email settings are missing, it logs a message and returns without raising
 def send_report_email(
     subject: str,
     body: str,
     to_addrs: Optional[Iterable[str]] = None,
     reply_to: Optional[str] = None,
 ) -> None:
-    """Send the duty report via email.
-
-    Uses basic SMTP configuration from environment variables.
-    If email settings are missing, it logs a message and returns without raising.
-    """
 
     if not SMTP_HOST or not EMAIL_FROM:
         print("Email not sent: REPORTBOT_SMTP_HOST or REPORTBOT_EMAIL_FROM not configured.")
