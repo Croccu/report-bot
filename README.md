@@ -13,8 +13,11 @@ Built with [Slack Bolt (Python)](https://slack.dev/bolt-python) and Socket Mode.
   - Highlights
   - Edgetier (Reports, General)
   - PSP inbox
-- Bot posts formatted duty report back into the channel.
+- Bot posts a formatted duty report back into the channel using Slack mrkdwn
+  (bold headline + section headers, bullet lists, etc.).
 - Static intro/outro lines (“Hello!” / “Have a great day!”).
+- Optional: send the same duty report via email using SMTP (e.g. Mailtrap sandbox
+  or your own SMTP provider).
 
 ---
 
@@ -62,10 +65,13 @@ python3 -m reportbot.bot
 
 ### 5. Use it
 In Slack:
-```
-/report
-```
-Fill the modal → Submit → Report is posted in the channel.
+
+- Run `/report` to open the duty report modal.
+  - Fill the fields → Submit → A formatted report is posted in the configured
+    channel and, if email settings are configured, the same report is also
+    sent via email.
+- Run `/report-ask` to have the bot pick a random channel member and ping them
+  with a button that opens the same report modal.
 
 ---
 
@@ -73,11 +79,14 @@ Fill the modal → Submit → Report is posted in the channel.
 ```
 report-bot/
 ├── reportbot/
-│   ├── __init__.py
-│   ├── bot.py        # main bot logic (socket mode + modal + report post)
-│   └── post.py       # simple test message sender
+│   ├── __init__.py        # package init
+│   ├── bot.py             # main bot logic (socket mode, modal + report post + email)
+│   ├── views.py           # Slack modal view definition
+│   ├── reminders.py       # reminder helpers and /report-ask button handler
+│   ├── email_utils.py     # SMTP helper for sending duty reports via email
+│   └── post.py            # simple test message sender (optional)
 ├── requirements.txt
-├── .env              # environment variables (never commit this)
+├── .env                   # environment variables (never commit this)
 └── README.md
 ```
 
