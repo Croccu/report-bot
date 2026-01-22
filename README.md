@@ -37,11 +37,23 @@ Create a `.env` file:
 REPORTBOT_SLACK_BOT_TOKEN=xoxb-your-bot-token
 REPORTBOT_APP_TOKEN=xapp-your-app-token
 REPORTBOT_CHANNEL_ID=C1234567890
+
+# Email settings (optional, for sending the duty report via email)
+REPORTBOT_SMTP_HOST=smtp.your-provider.com
+REPORTBOT_SMTP_PORT=587
+REPORTBOT_SMTP_USER=your-smtp-username
+REPORTBOT_SMTP_PASSWORD=your-smtp-password
+REPORTBOT_EMAIL_FROM=duty-bot@your-company.com
+REPORTBOT_EMAIL_TO=duty-reports@your-company.com
 ```
 
 - `REPORTBOT_SLACK_BOT_TOKEN` → Bot User OAuth Token from Slack app settings.
 - `REPORTBOT_APP_TOKEN` → App-level token with `connections:write` (for Socket Mode).
 - `REPORTBOT_CHANNEL_ID` → Slack channel ID where reports are posted.
+- `REPORTBOT_SMTP_HOST` / `REPORTBOT_SMTP_PORT` → SMTP server host + port.
+- `REPORTBOT_SMTP_USER` / `REPORTBOT_SMTP_PASSWORD` → SMTP credentials (if required).
+- `REPORTBOT_EMAIL_FROM` → From address used for the emails (e.g. a duty-bot mailbox).
+- `REPORTBOT_EMAIL_TO` → Default recipient address (e.g. a distribution list).
 
 ### 4. Run the bot
 ```bash

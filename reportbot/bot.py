@@ -4,10 +4,12 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
 from datetime import datetime
 
+# Load environment variables before importing modules that read them
+load_dotenv()
+
 from .reminders import register_reminder_handlers, send_report_prompt
 from .views import build_report_modal_view
-
-load_dotenv()
+from .email_utils import send_report_email
 
 BOT_TOKEN = os.getenv("REPORTBOT_SLACK_BOT_TOKEN")
 APP_TOKEN = os.getenv("REPORTBOT_APP_TOKEN")
@@ -16,7 +18,7 @@ CHANNEL_ID = os.getenv("REPORTBOT_CHANNEL_ID")
 app = App(token=BOT_TOKEN)
 register_reminder_handlers(app)
 
-# ----- Helpers ---------------------------------------------------------------
+# helpers
 def _get(view, block_id, action_id, default=""):
     try:
         v = view["state"]["values"][block_id][action_id].get("value", default)
@@ -30,7 +32,7 @@ def _to_int(s, default=0):
     except Exception:
         return default
 
-# ----- Slash command: /report  ----------------------------------------------
+# slash command: /report
 @app.command("/report")
 def handle_report(ack, body, client):
     ack()
@@ -41,7 +43,7 @@ def handle_report(ack, body, client):
     )
 
 
-# ----- Slash command: /report-ask -------------------------------------------
+# slash command: /report-ask
 @app.command("/report-ask")
 def handle_report_ask(ack, body, respond):
     """Slash command that picks an online user and pings them with a button.
@@ -52,7 +54,7 @@ def handle_report_ask(ack, body, respond):
     send_report_prompt(app, CHANNEL_ID)
 
 
-# ----- Modal submission ------------------------------------------------------
+# modal submission
 @app.view("report_modal")
 def handle_modal_submission(ack, body, client, view):
     ack()
@@ -113,10 +115,16 @@ def handle_modal_submission(ack, body, client, view):
         "Have a great day!",
     ]
 
+    # Post into Slack
     client.chat_postMessage(
         channel=CHANNEL_ID,
         text="\n".join(lines)
     )
+
+    # Also send via email (if SMTP and email env vars are configured)
+    subject = lines[0]
+    body = "\n".join(lines)
+    send_report_email(subject=subject, body=body)
 
 if __name__ == "__main__":
     handler = SocketModeHandler(app, APP_TOKEN)
