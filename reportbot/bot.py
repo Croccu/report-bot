@@ -50,7 +50,6 @@ def handle_report_ask(ack, body, respond):
     """
     ack()
     send_report_prompt(app, CHANNEL_ID)
-    respond("Okay, I'll ask someone in the channel to fill in the duty report.")
 
 
 # ----- Modal submission ------------------------------------------------------
@@ -78,7 +77,11 @@ def handle_modal_submission(ack, body, client, view):
     psp_inbox = _to_int(_get(view, "psp_inbox_block", "psp_inbox_input"))
 
     # Build message in your exact format
+    # Header: PaySec duty report dd.mm.yyyy from @user
+    # Slack will render <@{user_id}> as the user's handle (e.g. @rico.paum)
     lines = [
+        f"PaySec duty report {datetime.now().strftime('%d.%m.%Y')} from <@{user_id}>",
+        "",
         "Hello!",
         "",
         summary if summary.strip() else "-",
