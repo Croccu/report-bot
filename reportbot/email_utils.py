@@ -18,6 +18,7 @@ def send_report_email(
     body: str,
     to_addrs: Optional[Iterable[str]] = None,
     reply_to: Optional[str] = None,
+    html_body: Optional[str] = None,
 ) -> None:
 
     if not SMTP_HOST or not EMAIL_FROM:
@@ -38,7 +39,13 @@ def send_report_email(
     msg["To"] = ", ".join(recipients)
     if reply_to:
         msg["Reply-To"] = reply_to
+
+    # Plain-text body (fallback for clients that don't support HTML)
     msg.set_content(body)
+
+    # Optional HTML version for rich clients (Gmail, Outlook, etc.)
+    if html_body:
+        msg.add_alternative(html_body, subtype="html")
 
     try:
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
