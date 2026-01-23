@@ -4,6 +4,11 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dotenv import load_dotenv
 from datetime import datetime
 
+import threading
+import schedule
+import time
+
+
 # Load environment variables before importing modules that read them
 load_dotenv()
 
@@ -17,6 +22,23 @@ CHANNEL_ID = os.getenv("REPORTBOT_CHANNEL_ID")
 
 app = App(token=BOT_TOKEN)
 register_reminder_handlers(app)
+
+# run background scheduler that sends /report-ask style prompts twice a day
+def _schedule_report_prompts() -> None:
+
+    def morning_job() -> None:
+        send_report_prompt(app, CHANNEL_ID)
+
+    def night_job() -> None:
+        send_report_prompt(app, CHANNEL_ID)
+
+    # adjust these times if needed.
+    schedule.every().day.at("07:50").do(morning_job)
+    schedule.every().day.at("21:08").do(night_job)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
 
 # helpers
 def _get(view, block_id, action_id, default=""):
@@ -79,10 +101,15 @@ def handle_modal_submission(ack, body, client, view):
     psp_inbox = _to_int(_get(view, "psp_inbox_block", "psp_inbox_input"))
 
     # Build message in your exact format
-    # Header: PaySec duty report dd.mm.yyyy from @user
+    # Header: PaySec duty report dd.mm.yyyy
     # Slack will render <@{user_id}> as the user's handle (e.g. @rico.paum)
+    date_str = datetime.now().strftime('%d.%m.%Y')
+
+    slack_header = f"*PaySec duty report {date_str} from <@{user_id}>*"
+    email_header = f"*PaySec duty report {date_str}*"
+
     lines = [
-        f"*PaySec duty report {datetime.now().strftime('%d.%m.%Y')} from <@{user_id}>*",
+        slack_header,
         "",
         "Hello!",
         "",
@@ -123,11 +150,16 @@ def handle_modal_submission(ack, body, client, view):
         text="\n".join(lines)
     )
 
-    # Also send via email (if SMTP and email env vars are configured)
-    subject = lines[0]
-    body = "\n".join(lines)
+    # Also send via email (if SMTP and email env vars are configured).
+    # Use a simpler header for email (no Slack user mention in the subject).
+    email_lines = [email_header] + lines[1:]
+    subject = f"PaySec duty report {date_str}"
+    body = "\n".join(email_lines)
     send_report_email(subject=subject, body=body)
 
 if __name__ == "__main__":
+    scheduler_thread = threading.Thread(target=_schedule_report_prompts, daemon=True)
+    scheduler_thread.start()
+
     handler = SocketModeHandler(app, APP_TOKEN)
     handler.start()
