@@ -32,8 +32,8 @@ def _schedule_report_prompts() -> None:
         send_report_prompt(app, CHANNEL_ID)
 
     # adjust these times if needed.
-    schedule.every().day.at("07:50").do(morning_job)
-    schedule.every().day.at("23:50").do(night_job)
+    schedule.every().day.at("13:15").do(morning_job)
+    schedule.every().day.at("23:30").do(night_job)
 
     while True:
         schedule.run_pending()
