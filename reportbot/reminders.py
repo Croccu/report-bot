@@ -5,8 +5,7 @@ from typing import List
 from slack_sdk.errors import SlackApiError
 from .views import build_report_modal_view
 
-# return a list of user IDs in the given channel
-# currently does NOT filter by presence
+# return a list of *online* user IDs in the given channel
 def get_channel_members(app, channel_id: str) -> List[str]:
     try:
         members_resp = app.client.conversations_members(channel=channel_id)
@@ -26,7 +25,17 @@ def get_channel_members(app, channel_id: str) -> List[str]:
     if bot_user_id:
         member_ids = [m for m in member_ids if m != bot_user_id]
 
-    return member_ids
+    # keep only members whose presence is "active"
+    online_members = []
+    for uid in member_ids:
+        try:
+            presence = app.client.users_getPresence(user=uid)
+            if presence.get("presence") == "active":
+                online_members.append(uid)
+        except SlackApiError as e:
+            print(f"Error fetching presence for {uid}: {e.response['error']}")
+
+    return online_members
 
 # pick a random channel member and ping them with a button to open the modal
 def send_report_prompt(app, channel_id: str) -> None:
