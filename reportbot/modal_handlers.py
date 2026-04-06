@@ -16,6 +16,13 @@ def register_modal_handlers(app, channel_id: str) -> None:
         except Exception:
             return default
 
+    def _get_multi(view: dict, block_id: str, action_id: str) -> list[str]:
+        try:
+            opts = view["state"]["values"][block_id][action_id].get("selected_options") or []
+            return [o["text"]["text"] for o in opts]
+        except Exception:
+            return []
+
     def _to_int(s: Any, default: int = 0) -> int:
         try:
             return int(str(s).strip())
@@ -57,9 +64,10 @@ def register_modal_handlers(app, channel_id: str) -> None:
 
         payouts_row = _get(view, "payouts_row_block", "payouts_row_input", default="up to date")
         payouts_peru = _get(view, "payouts_peru_block", "payouts_peru_input", default="up to date")
-
         highlights = _get(view, "highlights_block", "highlights_input")
+        routines = _get_multi(view, "routines_block", "routines_input")
 
+        edgetier_reports
         edgetier_reports = _to_int(_get(view, "edgetier_reports_block", "edgetier_reports_input"))
         edgetier_general = _to_int(_get(view, "edgetier_general_block", "edgetier_general_input"))
 
@@ -95,7 +103,7 @@ def register_modal_handlers(app, channel_id: str) -> None:
             highlights if highlights.strip() else "-",
             "",
             "*Routines* (What reports have been done, routines etc.)",
-            "-",
+            "\n".join(f"- {r}" for r in routines) if routines else "-",
             "",
             "*Edgetier*",
             f"- Reports: *{edgetier_reports}*",
@@ -136,7 +144,7 @@ def register_modal_handlers(app, channel_id: str) -> None:
             highlights if highlights.strip() else "-",
             "",
             "Routines",
-            "-",
+            "\n".join(f"- {r}" for r in routines) if routines else "-",
             "",
             "Edgetier",
             f"- Reports: {edgetier_reports}",
@@ -186,7 +194,7 @@ def register_modal_handlers(app, channel_id: str) -> None:
     <p>{esc(highlights if highlights.strip() else '-')}</p>
 
     <h2>Routines</h2>
-    <p>-</p>
+    <p>{esc(', '.join(routines)) if routines else '-'}</p>
 
     <h2>Edgetier</h2>
     <ul>
