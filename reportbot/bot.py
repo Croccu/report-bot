@@ -13,6 +13,7 @@ load_dotenv()
 from .reminders import register_reminder_handlers, send_report_prompt
 from .views import build_report_modal_view
 from .modal_handlers import register_modal_handlers
+from .schedule_config import MORNING_REPORT_TIME, NIGHT_REPORT_TIME
 
 BOT_TOKEN = os.getenv("REPORTBOT_SLACK_BOT_TOKEN")
 APP_TOKEN = os.getenv("REPORTBOT_APP_TOKEN")
@@ -31,9 +32,8 @@ def _schedule_report_prompts() -> None:
     def night_job() -> None:
         send_report_prompt(app, CHANNEL_ID)
 
-    # adjust these times if needed.
-    schedule.every().day.at("14:31").do(morning_job)
-    schedule.every().day.at("23:30").do(night_job)
+    schedule.every().day.at(MORNING_REPORT_TIME).do(morning_job)
+    schedule.every().day.at(NIGHT_REPORT_TIME).do(night_job)
 
     while True:
         schedule.run_pending()
