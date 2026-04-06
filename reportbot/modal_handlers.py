@@ -67,7 +67,6 @@ def register_modal_handlers(app, channel_id: str) -> None:
         highlights = _get(view, "highlights_block", "highlights_input")
         routines = _get_multi(view, "routines_block", "routines_input")
 
-        edgetier_reports
         edgetier_reports = _to_int(_get(view, "edgetier_reports_block", "edgetier_reports_input"))
         edgetier_general = _to_int(_get(view, "edgetier_general_block", "edgetier_general_input"))
 
