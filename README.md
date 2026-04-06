@@ -1,12 +1,31 @@
 # Report Bot
 
-A Slack bot for submitting structured duty reports via `/report` slash command.
+A Slack bot that automatically picks someone in the channel and asks them to
+fill in the duty report. No more typing `/report` yourself — the bot pings a
+random channel member with a button that opens the report form.
 Built with [Slack Bolt (Python)](https://slack.dev/bolt-python) and Socket Mode.
 
 ---
 
+## How it works
+1. Twice a day (on a configurable schedule) the bot picks a random member of
+   the configured channel and sends them a message with an **Open report form**
+   button.
+2. The selected person clicks the button, fills in the modal, and submits.
+3. A formatted duty report is posted back into the channel (and optionally
+   sent via email).
+
+You can also trigger this flow manually with the `/report-ask` slash command
+(useful for testing — see [Usage](#5-use-it) below).
+
 ## Features
-- `/report` opens a Slack modal form with fields:
+- Automatic report prompts — bot selects a channel member and pings them with
+  a button to open the report modal.
+- `/report-ask` slash command to manually trigger the ask-to-report flow
+  (great for testing without waiting for the schedule).
+- `/report` slash command still available for anyone who wants to open the form
+  directly.
+- Modal form with fields:
   - Summary
   - KYC (General, Security, Peru Queue, Peru Security)
   - Payouts (ROW, Peru)
@@ -66,12 +85,17 @@ python3 -m reportbot.bot
 ### 5. Use it
 In Slack:
 
-- Run `/report` to open the duty report modal.
-  - Fill the fields → Submit → A formatted report is posted in the configured
-    channel and, if email settings are configured, the same report is also
-    sent via email.
-- Run `/report-ask` to have the bot pick a random channel member and ping them
-  with a button that opens the same report modal.
+- Run `/report-ask` to test the main flow — the bot picks a random channel
+  member, pings them with a message, and gives them an **Open report form**
+  button. Clicking the button opens the report modal.
+- Run `/report` to open the duty report modal directly (without the bot
+  picking someone).
+- Fill the fields → Submit → A formatted report is posted in the configured
+  channel and, if email settings are configured, also sent via email.
+
+In production the bot triggers this automatically on a schedule (see
+`_schedule_report_prompts` in `bot.py`), so no slash command is needed
+day-to-day.
 
 ---
 
