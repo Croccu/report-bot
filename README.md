@@ -110,7 +110,7 @@ report-bot/
 │   ├── email_utils.py     # SMTP helper for sending duty reports via email
 │   └── post.py            # simple test message sender (optional)
 ├── requirements.txt
-├── .env                   # environment variables (never commit this)
+├── .env                   # environment variables
 └── README.md
 ```
 

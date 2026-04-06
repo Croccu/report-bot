@@ -1,8 +1,10 @@
 import html
+import json
 from datetime import datetime
 from typing import Any
 
 from .email_utils import send_report_email
+from .reminders import _build_prompt_blocks
 
 
 def register_modal_handlers(app, channel_id: str) -> None:
@@ -200,3 +202,23 @@ def register_modal_handlers(app, channel_id: str) -> None:
 </html>"""
 
         send_report_email(subject=subject, body=body, html_body=html_body)
+
+        # if this modal was opened from a prompt message, mark it as solved
+        raw_meta = view.get("private_metadata", "")
+        if raw_meta:
+            try:
+                meta = json.loads(raw_meta)
+                prompt_channel = meta.get("channel")
+                prompt_ts = meta.get("message_ts")
+                prompt_user = meta.get("user_id", user_id)
+                if prompt_channel and prompt_ts:
+                    client.chat_update(
+                        channel=prompt_channel,
+                        ts=prompt_ts,
+                        text=f"<@{prompt_user}> it's time to fill in the duty report.",
+                        blocks=_build_prompt_blocks(
+                            f"<@{prompt_user}>", status="solved"
+                        ),
+                    )
+            except Exception as e:
+                print(f"Error updating prompt to solved: {e}")

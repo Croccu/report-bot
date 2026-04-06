@@ -1,9 +1,9 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 # return slack modal view for duty report
 # currently used by both /report command and reminder button action
-def build_report_modal_view() -> Dict[str, Any]:
-    return {
+def build_report_modal_view(private_metadata: Optional[str] = None) -> Dict[str, Any]:
+    view: Dict[str, Any] = {
         "type": "modal",
         "callback_id": "report_modal",
         "title": {"type": "plain_text", "text": "Duty Report"},
@@ -129,3 +129,6 @@ def build_report_modal_view() -> Dict[str, Any]:
             },
         ],
     }
+    if private_metadata:
+        view["private_metadata"] = private_metadata
+    return view
