@@ -3,10 +3,9 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from dotenv import load_dotenv
 
-# load .env file
+
 load_dotenv()
 
-# get vars from environment
 SLACK_BOT_TOKEN = os.getenv("REPORTBOT_SLACK_BOT_TOKEN")
 CHANNEL_ID = os.getenv("REPORTBOT_CHANNEL_ID")
 
